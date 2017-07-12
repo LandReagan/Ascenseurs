@@ -1,90 +1,97 @@
 import tkinter as tk
 
+import logger
+from logger import logD, logI, logW, logE, logC
 from globales import *
 import ressources
 from boutons import *
-
+from signaux import signaux
 from cabine import Cabine
 from etages import Etages
 from capteurs import Capteurs
+from panneau_maintenance import PanneauMaintenance
+from panneau_puit import PanneauPuit
+from panneau_cabine import PanneauCabine
 
 
-# Initialisation de tkinter et création du panneau principal
-fenetre = tk.Tk()
-fenetre.geometry('800x600')
-panneau = tk.Frame(fenetre)
-panneau.grid()
-ressources.chargerPhotos()
+class Ascenseur(tk.Tk):
+    """ Cette classe est la classe principale de l'application
+    """
+
+    def __init__(self):
+        """ Le constructeur de la classe Ascenseurs est la fonction la plus
+            importante. Elle :
+            1. Initialise le logger (voir logger.py)
+            2. lance la construction de Tkinter
+            3. Customise la fenêtre de l'application
+            4. Crée le panneau principal contenant tous les autres widgets
+            et le positionne
+            5. Charge les ressources externes (dessins)
+        """
+        logger.initialiser()
+        logI('Construction de l\'application')
+
+        super().__init__()
+
+        self.geometry('800x600')
+
+        self.panneau_principal = tk.Frame(self)
+        self.panneau_principal.grid()
+
+        ressources.chargerDessins()
+
+        # Création du panneau de maintenance
+        self.panneau_maintenance = PanneauMaintenance(
+            parent=self.panneau_principal)
+
+        # Création du panneau de puit
+        self.panneau_puit = PanneauPuit(self.panneau_principal)
+
+        # Création de la cabine
+        self.cabine = Cabine(self.panneau_puit.dessin_puit)
+
+        # Création du panneau interne de la Cabine
+        self.panneau_cabine = PanneauCabine(
+            self.panneau_principal, self.cabine)
+
+        # Création des étages
+        self.etages = Etages(self.panneau_puit.dessin_puit)
+
+        # Création des capteurs
+        self.capteurs = Capteurs(
+            self.panneau_puit.dessin_puit, self.cabine, self.etages.etages)
+
+        logD('Lancement de l\'animation')
+        self.animation()
+        self.mainloop()
+
+    def logique(self):
+
+        # Logique du panneau de maintenance
+        if signaux['pm_cmc_'] is True:
+            if signaux['pm_bb_'] is True:
+                self.cabine.descente = True
+            else:
+                self.cabine.descente = False
+            if signaux['pm_bh_'] is True:
+                self.cabine.montee = True
+            else:
+                self.cabine.montee = False
+
+        # Logique automatique
+        else:
+            self.cabine.montee = False
+            self.cabine.descente = False
+
+    def animation(self):
+        self.logique()
+        self.cabine.miseAJour()
+        self.capteurs.miseAJour()
+        self.panneau_principal.after(RAFRAICHISSEMENT, self.animation)
+
+    def __del__(self):
+        logI('Fin de l\'application')
 
 
-# Création du panneau de maintenance
-panneau_maintenance = tk.Frame(panneau)
-panneau_maintenance.grid(column=0, row=1)
-titre_panneau_maintenance = tk.Label(panneau_maintenance, text="Maintenance")
-titre_panneau_maintenance.grid(column=0, row=0)
-bouton_maintenance_haut = BoutonHaut(panneau_maintenance)
-bouton_maintenance_haut.grid(column=0, row=1)
-bouton_maintenance_bas = BoutonBas(panneau_maintenance)
-bouton_maintenance_bas.grid(column=0, row=2)
-
-# Création du Titre
-panneau_titre = tk.LabelFrame(
-    master=panneau, text='Ascenseurs',
-    height=DIMENSIONS_CABINE[1],
-    width=DIMENSIONS_CABINE[0] * 4,
-    bg='white')
-panneau_titre.grid(column=1, row=0)
-panneau_titre.grid_propagate(0)
-titre = tk.Label(master=panneau_titre, text='TITRE', bg='white')
-titre.grid()
-
-# Création du puit
-panneau_puit = tk.Frame(panneau)
-panneau_puit.grid(column=1, row=1)
-dessin_puit = tk.Canvas(panneau_puit, bg='white')
-dessin_puit.config(
-    width=4 * DIMENSIONS_CABINE[0],
-    height=NOMBRE_ETAGES * HAUTEUR_ETAGE)
-dessin_puit.create_rectangle(
-    DIMENSIONS_CABINE[0] / 2,
-    0,
-    DIMENSIONS_CABINE[0] * 3 / 2,
-    NOMBRE_ETAGES * HAUTEUR_ETAGE)
-dessin_puit.grid()
-
-# Création du panneau des boutons d'étage
-panneau_boutons_etage = tk.Frame(panneau, bg='red')
-panneau_boutons_etage.grid(column=2, row=1)
-for i in range(0, NOMBRE_ETAGES):
-    bouton_haut = BoutonHaut(panneau_boutons_etage)
-    bouton_haut.grid(column=0, row=2 * i)
-    bouton_haut.config(
-        height=HAUTEUR_ETAGE // 2 - int(str(bouton_haut.cget('borderwidth'))) * 3
-    )
-    bouton_bas = BoutonBas(panneau_boutons_etage)
-    bouton_bas.grid(column=0, row=2 * i + 1)
-    bouton_bas.config(
-        height=HAUTEUR_ETAGE // 2 - int(str(bouton_haut.cget('borderwidth'))) * 3
-    )
-
-
-# Création de la cabine
-cabine = Cabine(dessin_puit)
-
-# Création des étages
-etages = Etages(dessin_puit)
-
-# Création des capteurs
-capteurs = Capteurs(dessin_puit, cabine, etages.etages)
-
-
-def animation():
-    cabine.descente = True if bouton_maintenance_bas.actif else False
-    cabine.montee = True if bouton_maintenance_haut.actif else False
-    cabine.miseAJour()
-    capteurs.miseAJour()
-    panneau.after(50, animation)
-
-
-animation()
-fenetre.mainloop()
+if __name__ == '__main__':
+    app = Ascenseur()

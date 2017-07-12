@@ -22,7 +22,7 @@ class Etages:
                 dash=(4, 1))
 
             bouton_haut = self.canevas.create_image(
-                0, 0, image=ressources.photo_bouton_haut)
+                0, 0, image=ressources.dessin_bouton_haut)
             bouton_coordonnees = self.canevas.bbox(bouton_haut)
             hauteur_bouton = bouton_coordonnees[3] - bouton_coordonnees[1]
             self.canevas.coords(
@@ -32,7 +32,7 @@ class Etages:
             self.boutons_etages_haut[e] = bouton_haut
 
             bouton_bas = self.canevas.create_image(
-                0, 0, image=ressources.photo_bouton_bas)
+                0, 0, image=ressources.dessin_bouton_bas)
             self.canevas.coords(
                 bouton_bas,
                 2 * DIMENSIONS_CABINE[0],
