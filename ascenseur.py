@@ -5,7 +5,8 @@ from logger import logD, logI, logW, logE, logC
 from globales import *
 import ressources
 from boutons import *
-from signaux import signaux
+from signaux import signaux,\
+    signaux_precedents, unCapteurEtageEstActif, etat
 from cabine import Cabine
 from etages import Etages
 from capteurs import Capteurs
@@ -68,12 +69,18 @@ class Ascenseur(tk.Tk):
     def logique(self):
 
         # Logique du panneau de maintenance
+        if unCapteurEtageEstActif() and not self.cabine.arretee:
+            if signaux_precedents['pm_dbb_']:
+                signaux['pm_dbb_'] = False
+            if signaux_precedents['pm_dbh_']:
+                signaux['pm_dbh_'] = False
+        
         if signaux['pm_cmc_'] is True:
-            if signaux['pm_bb_'] is True:
+            if signaux['pm_dbb_'] or signaux['pm_bb_']:
                 self.cabine.descente = True
             else:
                 self.cabine.descente = False
-            if signaux['pm_bh_'] is True:
+            if signaux['pm_dbh_'] or signaux['pm_bh_']:
                 self.cabine.montee = True
             else:
                 self.cabine.montee = False
@@ -84,13 +91,12 @@ class Ascenseur(tk.Tk):
             self.cabine.descente = False
 
     def animation(self):
+        self.capteurs.miseAJour()
+        self.etages.miseAJour()
+        self.panneau_maintenance.miseAJour()
         self.logique()
         self.cabine.miseAJour()
-        self.capteurs.miseAJour()
         self.panneau_principal.after(RAFRAICHISSEMENT, self.animation)
-
-    def __del__(self):
-        logI('Fin de l\'application')
 
 
 if __name__ == '__main__':

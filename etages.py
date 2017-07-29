@@ -1,8 +1,12 @@
 from globales import *
 import ressources
+from signaux import listeSignauxEtagesBas, listeSignauxEtagesHaut
 
 
 class Etages:
+    """ Cette classe définit le graphisme des étages, constitué d'une ligne de
+        plancher et des boutons d'appel.
+    """
 
     def __init__(self, canevas):
         self.canevas = canevas
@@ -38,3 +42,33 @@ class Etages:
                 2 * DIMENSIONS_CABINE[0],
                 hauteur_plancher - HAUTEUR_ETAGE / 2 + hauteur_bouton / 2)
             self.boutons_etages_bas[e] = bouton_bas
+
+    def miseAJour(self):
+        """ Cette fonction met à jour le dessin des boutons d'appel selon
+            l'état des signaux.
+        """
+        liste_bas = listeSignauxEtagesBas()
+        for etage in self.boutons_etages_bas.keys():
+            if etage in liste_bas:
+                self.canevas.itemconfigure(
+                    self.boutons_etages_bas[etage],
+                    image=ressources.dessin_bouton_bas_actif
+                )
+            else:
+                self.canevas.itemconfigure(
+                    self.boutons_etages_bas[etage],
+                    image=ressources.dessin_bouton_bas
+                )
+
+        liste_haut = listeSignauxEtagesHaut()
+        for etage in self.boutons_etages_haut.keys():
+            if etage in liste_haut:
+                self.canevas.itemconfigure(
+                    self.boutons_etages_haut[etage],
+                    image=ressources.dessin_bouton_haut_actif
+                )
+            else:
+                self.canevas.itemconfigure(
+                    self.boutons_etages_haut[etage],
+                    image=ressources.dessin_bouton_haut
+                )

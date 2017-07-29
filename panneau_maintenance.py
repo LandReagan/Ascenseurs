@@ -3,7 +3,7 @@ import tkinter as tk
 from boutons import (
     BoutonHaut, BoutonBas, DoubleBoutonBas, DoubleBoutonHaut, BoutonTexte)
 from globales import *
-import signaux
+from signaux import signaux
 
 
 class PanneauMaintenance(tk.Frame):
@@ -24,7 +24,6 @@ class PanneauMaintenance(tk.Frame):
         self.actif = False
         super().__init__(master=parent, bg=bg)
         self.grid(column=0, row=0)
-        print(parent.cget('bg'))
 
         # Titre en colonne 0 et 1 ligne 0
         self.titre = tk.Label(
@@ -97,15 +96,9 @@ class PanneauMaintenance(tk.Frame):
     def hauteurTitre(self):
         return self.titre.cget('height')
 
-    def clicControleManuelCabine(self):  # OBSOLETE
-        self.actif = not self.actif
-        signaux.miseAJour('pm_contr_man_cab_', self.actif)
-        if self.actif:
-            self.bouton_activation.config(
-                bg='red', text='Activé !', fg=couleur_orange_pale)
-        else:
-            self.bouton_activation.config(
-                bg='white', text='Activer', fg='black')
+    def miseAJour(self):
+        self.bouton_double_bas.miseAJour(signaux['pm_dbb_'])
+        self.bouton_double_haut.miseAJour(signaux['pm_dbh_'])
 
 
 if __name__ == '__main__':

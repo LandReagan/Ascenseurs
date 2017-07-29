@@ -1,10 +1,9 @@
 import tkinter as tk
 
 import ressources
-from signaux import miseAJour, ajouter
+import signaux
 
 
-# Redéfinition de la classe tk.Button pour notre usage
 class Bouton(tk.Button):
 
     def __init__(self, parent=None, height=None, signal=None):
@@ -14,16 +13,19 @@ class Bouton(tk.Button):
         if not ressources.images_chargees:
             ressources.chargerDessins()
         self.signal = signal
-        ajouter({self.signal: False})
+        signaux.ajouter({self.signal: False})
 
     def clic(self):
-        self.actif = not self.actif
+        self.miseAJour(not self.actif)
+
+    def miseAJour(self, actif):
+        self.actif = actif
         if self.actif:
             super().config(bg='green')
-            miseAJour(self.signal, True)
+            signaux.miseAJour(self.signal, True)
         else:
             super().config(bg='white')
-            miseAJour(self.signal, False)
+            signaux.miseAJour(self.signal, False)
 
 
 class BoutonTexte(Bouton):
