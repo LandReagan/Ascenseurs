@@ -1,42 +1,50 @@
 import tkinter as tk
 
 import ressources
-import signaux
+from signaux import signaux, ajouter
 
 
 class Bouton(tk.Button):
+    """ Classe de base pour tous les boutons.
+    """
 
     def __init__(self, parent=None, height=None, signal=None):
         super().__init__(master=parent, height=height)
-        self.actif = False
         super().config(command=self.clic, bg='white')
+        self._signal = signal
+        ajouter({self._signal: False})
         if not ressources.images_chargees:
             ressources.chargerDessins()
-        self.signal = signal
-        signaux.ajouter({self.signal: False})
 
     def clic(self):
-        self.miseAJour(not self.actif)
+        self.miseAJour(not signaux[self._signal])
 
     def miseAJour(self, actif):
-        self.actif = actif
-        if self.actif:
+        signaux[self._signal] = actif
+        if signaux[self._signal]:
             super().config(bg='green')
-            signaux.miseAJour(self.signal, True)
         else:
             super().config(bg='white')
-            signaux.miseAJour(self.signal, False)
 
 
 class BoutonTexte(Bouton):
-    def __init__(
-            self, parent=None, height=None, signal=None,
-            texte=None):
-        super().__init__(
-            parent=parent, height=height, signal=signal)
-        super().config(text=texte)
+    """ Classe dérivée de la classe Bouton, à laquelle on ajoute du texte
+    """
+
+    def __init__(self, parent=None, height=None, signal=None, texte=None):
+        Bouton.__init__(self, parent=parent, height=height, signal=signal)
+        Bouton.config(self, text=texte)
 
 
+class BoutonDessin(Bouton):
+    """ Classe dérivée de la classe Bouton, à laquelle on ajoute un dessin
+    """
+
+    def __init__(self, parent=None, height=None, signal=None, dessin=None):
+        Bouton.__init__(self, parent=parent, height=height, signal=signal)
+        Bouton.config(image=dessin)
+
+# TODO : faire dériver les boutons ci-dessous de BoutonDessin
 class BoutonHaut(Bouton):
     def __init__(self, parent=None, height=None, signal=None):
         super().__init__(

@@ -48,3 +48,5 @@ Temporary Items
 *.pyc
 log.txt
 *.pyc
+*.dia~
+*.pyc
